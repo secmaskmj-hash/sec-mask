@@ -1,0 +1,228 @@
+/* =================================================================
+   Security Mask — طبقة الموبايل (mobile.css)  v4.3.2
+   ملف مستقل بالكامل، بينحمّل بعد style.css.
+   كل شي جواه محصور بـ @media(max-width:768px) أو بصنف .is-mobile،
+   يعني شكل الديسكتوب ما بيتغيّر ولا بكسل.
+
+   شو بيعالج:
+   1) كسر الشريط العلوي (الأزرار كانت تتراكب فوق بعض وفوق المحتوى)
+   2) شريط إجراءات أفقي قابل للتمرير بنصوص كاملة وواضحة
+   3) شريط تنقّل سفلي متل التطبيقات (Bottom Nav)
+   4) نوافذ منبثقة كـ Bottom Sheet مع أزرار حفظ ثابتة تحت
+   5) منع التمرير الأفقي، احترام حواف الشاشة (notch)، ومناطق لمس أكبر
+   ================================================================= */
+
+/* ---------- 1) أساسيات: ارتفاع صحيح ومنع الخروج الأفقي ---------- */
+html,body{max-width:100%;overflow-x:hidden}
+
+@supports(height:100dvh){
+  .app{height:100dvh}
+}
+
+@media(max-width:768px){
+
+  /* منع تكبير الصفحة تلقائياً عند الضغط على أي حقل (سلوك iOS/Android) */
+  input,select,textarea,.form-control,.soft-input{font-size:16px!important}
+  /* استثناء: الحقول الصغيرة جوا البطاقات بتضل مقروءة بدون ما تكبّر */
+  .badge,.worker-chip{font-size:11px!important}
+
+  /* أي عنصر ما ينفجر برّا الشاشة */
+  .content,.card,.modal,.module-header{max-width:100%}
+  .card{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  canvas,svg,img{max-width:100%}
+  canvas{height:auto!important}
+  pre,code{white-space:pre-wrap;word-break:break-word}
+
+
+  /* ---------- 2) الشريط العلوي: سطرين واضحين بدل التراكب ---------- */
+  .topbar{
+    display:flex;flex-wrap:wrap;align-items:center;
+    gap:8px;row-gap:0;
+    padding:calc(6px + env(safe-area-inset-top)) 10px 0;
+    min-height:0;height:auto;
+    border-top-width:3px;
+    position:relative;z-index:30;
+  }
+  /* السطر الأول: زر القائمة + العنوان + مفتاح الليلي */
+  .topbar .mobile-menu-btn{order:1}
+  .topbar .topbar-title{
+    order:2;flex:1 1 auto;min-width:0;
+    font-size:15px;font-weight:800;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    line-height:37px;
+  }
+  .topbar .theme-toggle{order:3}
+
+  /* السطر الثاني: شريط الإجراءات — أفقي، بينمرّر، وبنصوص كاملة */
+  .topbar #topbar-actions.topbar-right{
+    order:4;
+    flex:1 0 100%;width:100%;max-width:100%;
+    display:flex;flex-wrap:nowrap;justify-content:flex-start;
+    gap:7px;
+    overflow-x:auto;overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;
+    scroll-snap-type:x proximity;
+    padding:8px 0 9px;
+    margin:0 -10px;padding-inline:10px;
+    scrollbar-width:none;
+  }
+  .topbar #topbar-actions.topbar-right::-webkit-scrollbar{display:none}
+  /* إذا الصفحة ما فيها أي إجراء، ما منترك فراغ */
+  .topbar #topbar-actions.topbar-right:empty{display:none;padding:0}
+
+  /* الأزرار: نص كامل + أيقونة، بدون قص، وبحجم لمس مريح */
+  .topbar #topbar-actions .btn,
+  .topbar #topbar-actions .ux-quicknav-btn{
+    flex:0 0 auto;width:auto;min-width:0;
+    padding:8px 14px;min-height:38px;height:auto;
+    font-size:12.5px;font-weight:700;
+    white-space:nowrap;
+    border-radius:20px;
+    scroll-snap-align:start;
+  }
+  .topbar #topbar-actions .btn i,
+  .topbar #topbar-actions .ux-quicknav-btn i{font-size:15px;flex-shrink:0}
+  /* نُظهر النصوص (كانت مخفية سابقاً وهاد كان سبب التراكب) */
+  .topbar #topbar-actions .btn span{display:inline!important}
+  /* الاختصار Ctrl K ما إله معنى عالموبايل */
+  .topbar #topbar-actions .ux-quicknav-btn kbd{display:none!important}
+  .topbar #topbar-actions .ux-quicknav-btn span{display:inline!important}
+  /* الزر الأساسي (إضافة/تسجيل) أبرز شي بالشريط */
+  .topbar #topbar-actions .btn-primary{box-shadow:0 4px 14px rgba(138,79,44,.34)}
+  /* القائمة المنسدلة "المزيد" لازم تضل تشتغل جوا شريط بينمرّر */
+  .topbar #topbar-actions .row-menu-wrap{flex:0 0 auto;display:inline-flex}
+
+  /* ترتيب الشريط: الإجراء الأساسي أول شي بمتناول الإبهام،
+     و"خروج/قفل/بحث سريع" بالآخر (بينمرّر لإلهن وقت الحاجة).
+     هالأصناف بتنحط من mobile.js، وقواعدها هون بس — يعني الكمبيوتر ما بيتأثر. */
+  .topbar #topbar-actions>*{order:2}
+  .topbar #topbar-actions>.sm-first{order:1}
+  .topbar #topbar-actions>.sm-last{order:3;opacity:.92}
+  /* أزرار انزاحت لقائمة "المزيد" — مخفية على الموبايل فقط،
+     وبترجع تبيّن لحالها على الشاشات العريضة بدون أي إعادة بناء */
+  .topbar #topbar-actions>.sm-overflowed{display:none!important}
+  .topbar #topbar-actions>.sm-overflow-wrap{order:3}
+
+  .mobile-menu-btn{width:37px;height:37px;min-width:37px;font-size:18px;border-radius:12px}
+  .theme-toggle{width:37px;height:37px;min-width:37px;min-height:37px;border-radius:12px;padding:0}
+
+
+  /* ---------- 3) شريط التنقّل السفلي ---------- */
+  body.has-bottomnav .content{
+    padding-bottom:calc(74px + env(safe-area-inset-bottom));
+  }
+  .sm-bottomnav{
+    position:fixed;inset-inline:0;bottom:0;z-index:1500;
+    display:flex;align-items:stretch;
+    background:var(--bg);
+    border-top:1px solid var(--border);
+    box-shadow:0 -6px 22px rgba(15,22,32,.10);
+    padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+    backdrop-filter:saturate(160%) blur(10px);
+  }
+  .sm-bottomnav button{
+    flex:1 1 0;min-width:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:3px;padding:5px 2px;min-height:50px;
+    background:none;border:none;cursor:pointer;
+    font-family:inherit;font-size:10px;font-weight:700;
+    color:var(--text3);border-radius:12px;
+    transition:color .15s var(--ease),background .15s var(--ease);
+  }
+  .sm-bottomnav button i{font-size:20px;line-height:1}
+  .sm-bottomnav button span{
+    max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .sm-bottomnav button:active{background:var(--bg3)}
+  .sm-bottomnav button.active{color:var(--gold-dark)}
+  .sm-bottomnav button.active i{color:var(--gold)}
+  .sm-bottomnav button{position:relative}
+  .sm-bottomnav button.active::before{
+    content:'';position:absolute;top:-6px;left:50%;transform:translateX(-50%);
+    width:24px;height:3px;border-radius:0 0 3px 3px;background:var(--gold);
+  }
+  /* بتختفي وقت القفل / نافذة منبثقة مفتوحة / القائمة الجانبية مفتوحة */
+  body.sm-hide-bottomnav .sm-bottomnav{display:none}
+
+
+  /* ---------- 4) النوافذ المنبثقة: Bottom Sheet محترم ---------- */
+  .modal-backdrop{align-items:flex-end}
+  .modal{
+    width:100%;max-width:100%;margin:0;
+    border-radius:22px 22px 0 0;
+    max-height:92dvh;max-height:92vh;
+    padding:12px 16px calc(16px + env(safe-area-inset-bottom));
+    overflow-y:auto;-webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;
+  }
+  .modal-title{
+    position:sticky;top:0;z-index:5;
+    background:inherit;
+    margin:0 -16px 14px;padding:4px 16px 12px;
+    font-size:16px;
+  }
+  .modal::before{margin:0 auto 10px}
+  /* أزرار الحفظ/الإلغاء ثابتة تحت — ما عاد تضطر تنزل لآخر النموذج */
+  .modal-actions{
+    position:sticky;bottom:0;z-index:5;
+    background:inherit;
+    margin:16px -16px calc(-16px - env(safe-area-inset-bottom));
+    padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+    border-top:1px solid var(--border);
+    box-shadow:0 -6px 18px rgba(15,22,32,.07);
+    display:flex;gap:10px;flex-wrap:nowrap;
+  }
+  .modal-actions .btn{flex:1 1 0;justify-content:center;min-height:44px;font-size:13.5px;border-radius:14px}
+  .ux-modal-close{top:12px}
+
+
+  /* ---------- 5) مناطق لمس ومسافات أريح ---------- */
+  .content{padding:10px 10px 18px}
+  .btn{min-height:38px}
+  .btn-sm{min-height:34px}
+  .row-menu-btn{width:36px;height:36px}
+  .row-menu-item{min-height:42px;font-size:13.5px}
+  .row-menu-list{min-width:min(240px,82vw);max-height:60vh;overflow-y:auto}
+  .nav-item{min-height:44px}
+  .checkbox-label{min-height:36px}
+  .tab{min-height:40px}
+
+  /* أدوات القسم (بحث + فلاتر) بشكل منظّم بدل التكدّس */
+  .module-tools{display:flex;flex-wrap:wrap;gap:7px;width:100%}
+  .module-tools .form-control{flex:1 1 100%;min-width:0}
+  .module-tools .form-control[style*="width:140px"],
+  .module-tools .form-control[style*="width:160px"],
+  .module-tools .form-control[style*="width:170px"]{flex:1 1 calc(50% - 4px);width:auto!important}
+
+  /* بطاقات الجداول: أوضح وأسهل قراءة */
+  table:not(.print-table) tr{padding:11px 12px;border-radius:16px}
+  table:not(.print-table) td{font-size:12.5px;padding:7px 0}
+  table:not(.print-table) td[data-label]:not([data-label=""])::before{font-size:11.5px;color:var(--text3)}
+  .action-btns{gap:7px}
+
+  /* الرسوم البيانية ما تطلع برّا البطاقة */
+  .card>div[style*="height"]{max-width:100%}
+}
+
+/* شاشات صغيرة جداً */
+@media(max-width:400px){
+  .topbar .topbar-title{font-size:14px}
+  .sm-bottomnav button{font-size:9.5px}
+  .sm-bottomnav button i{font-size:19px}
+  .topbar #topbar-actions .btn{padding:8px 12px;font-size:12px}
+}
+
+/* الطباعة: ما بدنا شريط سفلي ولا شريط علوي بالورقة */
+@media print{
+  .sm-bottomnav{display:none!important}
+}
+
+/* T22: شريط الفترة على الموبايل */
+@media (max-width:640px){
+  .period-bar{gap:10px}
+  .period-nav{width:100%;justify-content:space-between}
+  .period-range{width:100%}
+  .period-range label{flex:1}
+  .period-range .form-control{width:100%}
+  .period-chips{width:100%}
+}
